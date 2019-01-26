@@ -8,13 +8,9 @@ import javafx.scene.Scene;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 import javafx.scene.control.Button;
 import javafx.scene.layout.StackPane;
-
-import java.io.FileInputStream;
 
 /**
  * The Player enum is used to indicate the status of a playable location.
@@ -68,8 +64,6 @@ public class Main extends Application implements EventHandler<ActionEvent> {
     private HBox[] playRows;
     private VBox playGrid;
 
-    private Image circleImage;
-    private Image crossImage;
 
     private Player currentPlayer;
     private Player[][] occupied;
@@ -80,13 +74,6 @@ public class Main extends Application implements EventHandler<ActionEvent> {
         launch(args);
     }
 
-    // Create cross and circle images
-    private void createImages() throws Exception{
-        FileInputStream crossFIS = new FileInputStream("icons/Cross.png");
-        crossImage = new Image(crossFIS);
-        FileInputStream circleFIS = new FileInputStream("icons/Circle.png");
-        circleImage = new Image(circleFIS);
-    }
 
     // Create all the buttons for the application
     private Pane createButtonGroup() {
@@ -128,9 +115,6 @@ public class Main extends Application implements EventHandler<ActionEvent> {
 
     @Override
     public void start(Stage primaryStage) throws Exception{
-        //Parent root = FXMLLoader.load(getClass().getResource("game.fxml"));
-        createImages();
-
         primaryStage.setTitle("Simple Tic-Tac-Toe");
         Pane layout = createButtonGroup();
         Scene scene = new Scene(layout);
@@ -193,11 +177,13 @@ public class Main extends Application implements EventHandler<ActionEvent> {
         }
         moves.push(new GameMove(getPlayButtonCoordinate(b), currentPlayer));
         if (currentPlayer == Player.CIRCLE) {
-            b.setGraphic(new ImageView(circleImage));
+            b.setText("O");
+            b.setStyle("-fx-font-size: 12em;");
             setOccupied(b, currentPlayer);
             currentPlayer = Player.CROSS;
         } else {
-            b.setGraphic(new ImageView(crossImage));
+            b.setText("X");
+            b.setStyle("-fx-font-size: 12em;");
             setOccupied(b, currentPlayer);
             currentPlayer = Player.CIRCLE;
         }
@@ -217,17 +203,22 @@ public class Main extends Application implements EventHandler<ActionEvent> {
     private void clearPlayButtons() {
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
-                playBs[i][j].setGraphic(null);
+                playBs[i][j].setText(null);
             }
         }
         initGame();
     }
 
+
     private void undo() {
+        if (moves.empty()) {
+            return;
+        }
+
         GameMove move = moves.peek();
         currentPlayer = move.player;
         occupied[move.location.row][move.location.column] = Player.UNSET;
-        playBs[move.location.row][move.location.column].setGraphic(null);
+        playBs[move.location.row][move.location.column].setText(null);
         moves.pop();
 
     }
