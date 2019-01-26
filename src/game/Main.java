@@ -64,11 +64,11 @@ public class Main extends Application implements EventHandler<ActionEvent> {
     private HBox[] playRows;
     private VBox playGrid;
 
-
-    private Player currentPlayer;
+    private Player nextPlayer;
     private Player[][] occupied;
 
-    private Stack<GameMove> moves;
+    private Stack<GameMove> prevMoves;
+    private Stack<GameMove> nextMoves;
 
     public static void main(String[] args) {
         launch(args);
@@ -84,6 +84,7 @@ public class Main extends Application implements EventHandler<ActionEvent> {
                 playBs[i][j] = new Button();
                 playBs[i][j].setPrefSize(PLAY_BUTTON_SIZE, PLAY_BUTTON_SIZE);
                 playBs[i][j].setOnAction(this);
+                playBs[i][j].setStyle("-fx-font-size: 12em;");
             }
         }
 
@@ -99,13 +100,11 @@ public class Main extends Application implements EventHandler<ActionEvent> {
         undoB.setStyle("-fx-font-size: 2em;");
         undoB.setOnAction(this);
 
-        /*
         redoB = new Button("Redo");
         redoB.setStyle("-fx-font-size: 2em;");
         redoB.setOnAction(this);
-        */
 
-        HBox buttonRow = new HBox(resetB, undoB);
+        HBox buttonRow = new HBox(resetB, undoB, redoB);
 
         playGrid = new VBox(buttonRow, playRows[0], playRows[1], playRows[2]);
 
@@ -126,7 +125,7 @@ public class Main extends Application implements EventHandler<ActionEvent> {
 
     // Initialize the game to unplayed state;
     private void initGame() {
-        currentPlayer = FIRST_PLAYER;
+        nextPlayer = FIRST_PLAYER;
         if (occupied == null) {
             occupied = new Player[3][3];
         }
@@ -135,7 +134,8 @@ public class Main extends Application implements EventHandler<ActionEvent> {
                 occupied[i][j] = Player.UNSET;
             }
         }
-        moves = new Stack<GameMove>();
+        prevMoves = new Stack<GameMove>();
+        nextMoves = new Stack<GameMove>();
     }
 
     private boolean isPlayButton(Button b) {
@@ -157,6 +157,13 @@ public class Main extends Application implements EventHandler<ActionEvent> {
         return false;
     }
 
+    private boolean isRedoButton(Button b) {
+        if (redoB == b) {
+            return true;
+        }
+        return false;
+    }
+
     private void setOccupied(Button b, Player player) {
         GridNum gNum = getPlayButtonCoordinate(b);
         occupied[gNum.row][gNum.column] = player;
@@ -167,25 +174,20 @@ public class Main extends Application implements EventHandler<ActionEvent> {
         return occupied[gNum.row][gNum.column] != Player.UNSET;
     }
 
-    private void clearMove(Button b) {
-
-    }
-
     private void setMove(Button b) {
         if (isOccupied(b)) {
             return;
         }
-        moves.push(new GameMove(getPlayButtonCoordinate(b), currentPlayer));
-        if (currentPlayer == Player.CIRCLE) {
+        prevMoves.push(new GameMove(getPlayButtonCoordinate(b), nextPlayer));
+        nextMoves.clear();
+        if (nextPlayer == Player.CIRCLE) {
             b.setText("O");
-            b.setStyle("-fx-font-size: 12em;");
-            setOccupied(b, currentPlayer);
-            currentPlayer = Player.CROSS;
+            setOccupied(b, nextPlayer);
+            nextPlayer = Player.CROSS;
         } else {
             b.setText("X");
-            b.setStyle("-fx-font-size: 12em;");
-            setOccupied(b, currentPlayer);
-            currentPlayer = Player.CIRCLE;
+            setOccupied(b, nextPlayer);
+            nextPlayer = Player.CIRCLE;
         }
     }
 
@@ -209,18 +211,36 @@ public class Main extends Application implements EventHandler<ActionEvent> {
         initGame();
     }
 
-
     private void undo() {
-        if (moves.empty()) {
+        if (prevMoves.empty()) {
             return;
         }
 
-        GameMove move = moves.peek();
-        currentPlayer = move.player;
+        GameMove move = prevMoves.peek();
+        nextPlayer = move.player;
         occupied[move.location.row][move.location.column] = Player.UNSET;
         playBs[move.location.row][move.location.column].setText(null);
-        moves.pop();
+        nextMoves.push(move);
+        prevMoves.pop();
 
+    }
+
+    private void redo() {
+        if (nextMoves.empty()) {
+            return;
+        }
+        GameMove move = nextMoves.peek();
+        if (move.player == Player.CIRCLE) {
+            nextPlayer = Player.CROSS;
+            playBs[move.location.row][move.location.column].setText("O");
+        } else {
+            playBs[move.location.row][move.location.column].setText("X");
+            nextPlayer = Player.CIRCLE;
+        }
+        occupied[move.location.row][move.location.column] = move.player;
+
+        prevMoves.push(move);
+        nextMoves.pop();
     }
 
     @Override
@@ -236,6 +256,8 @@ public class Main extends Application implements EventHandler<ActionEvent> {
             clearPlayButtons();
         } else if (isUndoButton(clickedB)) {
             undo();
+        } else if (isRedoButton(clickedB)) {
+            redo();
         }
     }
 }
