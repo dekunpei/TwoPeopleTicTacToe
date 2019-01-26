@@ -16,10 +16,16 @@ import javafx.scene.layout.StackPane;
 
 import java.io.FileInputStream;
 
+/**
+ * The Player enum is used to indicate the status of a playable location.
+ */
 enum Player {
     UNSET, CROSS, CIRCLE;
 }
 
+/**
+ * The GridNum class is used to represent a location.
+ */
 class GridNum {
     int row;
     int column;
@@ -34,6 +40,9 @@ class GridNum {
     }
 }
 
+/**
+ * The GameMove class is used to represent a game move.
+ */
 class GameMove {
     GridNum location;
     Player player;
@@ -44,6 +53,9 @@ class GameMove {
     }
 }
 
+/**
+ * The Main class creates the JavaFX implementation.
+ */
 public class Main extends Application implements EventHandler<ActionEvent> {
     private static final int PLAY_BUTTON_SIZE = 220;
     private static final Player FIRST_PLAYER = Player.CROSS;
