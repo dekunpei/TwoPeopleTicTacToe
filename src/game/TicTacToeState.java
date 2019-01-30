@@ -2,32 +2,22 @@ package game;
 
 import java.util.Stack;
 
-class GameState {
-    private static final Player INITIAL_LAST_FIRST_PLAYER = Player.CIRCLE;
-
-    private Player lastFirstPlayer;
+class TicTacToeState {
     private Player currentPlayer;
     private Player[][] occupied;
 
-    private Stack<GameMove> prevMoves;
-    private Stack<GameMove> nextMoves;
+    private Stack<TicTacToeMove> prevMoves;
+    private Stack<TicTacToeMove> nextMoves;
 
-    public GameState() {
-        lastFirstPlayer = INITIAL_LAST_FIRST_PLAYER;
+    TicTacToeState() {
         occupied = new Player[3][3];
-        prevMoves = new Stack<GameMove>();
-        nextMoves = new Stack<GameMove>();
+        prevMoves = new Stack<TicTacToeMove>();
+        nextMoves = new Stack<TicTacToeMove>();
         initGame();
     }
 
     private void chooseNewFirstPlayer() {
-        if (lastFirstPlayer == Player.CROSS) {
-            currentPlayer = Player.CIRCLE;
-            lastFirstPlayer = Player.CIRCLE;
-        } else {
-            currentPlayer = Player.CROSS;
-            lastFirstPlayer = Player.CROSS;
-        }
+        currentPlayer = Player.CROSS;
     }
 
     private void chooseCurrentPlayer() {
@@ -51,76 +41,64 @@ class GameState {
         nextMoves.clear();
     }
 
-    /**
-     * Initialize the game to clean state;
-     */
-    public void initGame() {
+    void initGame() {
         chooseNewFirstPlayer();
         clearOccupiedState();
         clearUndoRedoState();
     }
 
-    public void setOccupied(GridNumber gridNum, Player player) {
+    private void setOccupied(GridNumber gridNum, Player player) {
         occupied[gridNum.row][gridNum.column] = player;
     }
 
-    public Player getOccupiedBy(GridNumber gridNum) {
+    Player getOccupiedBy(GridNumber gridNum) {
         return occupied[gridNum.row][gridNum.column];
     }
 
-    public void setMove(GridNumber gridNum) {
-        prevMoves.push(new GameMove(gridNum, currentPlayer));
+    void setMove(GridNumber gridNum) {
+        prevMoves.push(new TicTacToeMove(gridNum, currentPlayer));
         nextMoves.clear();
         setOccupied(gridNum, currentPlayer);
         chooseCurrentPlayer();
     }
 
-    public Player getCurrentPlayer() {
+    Player getCurrentPlayer() {
         return currentPlayer;
     }
 
-    public Player getPreviousPlayer() {
-        if (currentPlayer == Player.CIRCLE) {
-            return Player.CROSS;
-        } else {
-            return Player.CIRCLE;
-        }
-    }
-
-    public boolean canUndo() {
+    boolean canUndo() {
         return !prevMoves.empty();
     }
 
-    public GameMove getUndoMove() {
-        GameMove move = prevMoves.peek();
-        return move;
+    TicTacToeMove getUndoMove() {
+        return prevMoves.peek();
     }
 
-    public void undo() {
+    void undo() {
         if (prevMoves.empty()) {
             return;
         }
 
-        GameMove move = prevMoves.peek();
+        TicTacToeMove move = prevMoves.peek();
         currentPlayer = move.player;
         occupied[move.location.row][move.location.column] = Player.UNSET;
         nextMoves.push(move);
         prevMoves.pop();
     }
 
-    public boolean canRedo() {
+    boolean canRedo() {
         return !nextMoves.empty();
     }
 
-    public GameMove getRedoMove() {
+    TicTacToeMove getRedoMove() {
         return nextMoves.peek();
     }
 
-    public void redo() {
+    void redo() {
         if (nextMoves.empty()) {
             return;
         }
-        GameMove move = nextMoves.peek();
+        TicTacToeMove move = nextMoves.peek();
         if (move.player == Player.CIRCLE) {
             currentPlayer = Player.CROSS;
         } else {
@@ -131,4 +109,66 @@ class GameState {
         prevMoves.push(move);
         nextMoves.pop();
     }
+
+    private boolean checkComboForWin(Player player, Player m1, Player m2, Player m3) {
+        return player == m1 && player == m2 && player == m3;
+    }
+
+    private boolean getPlayerHasDiagWin(Player player) {
+        return checkComboForWin(player, occupied[0][0], occupied[1][1], occupied[2][2]) ||
+                checkComboForWin(player, occupied[0][2], occupied[1][1], occupied[2][0]);
+    }
+
+    private boolean getPlayerHasColWin(Player player) {
+        for (int j = 0; j < 3; j++) {
+            if (checkComboForWin(player, occupied[0][j], occupied[1][j], occupied[2][j])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean getPlayerHasRowWin(Player player) {
+        for (int i = 0; i < 3; i++) {
+            if (checkComboForWin(player, occupied[i][0], occupied[i][1], occupied[i][2])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean getPlayerHasWin (Player player) {
+        return getPlayerHasRowWin(player) || getPlayerHasColWin(player) || getPlayerHasDiagWin(player);
+    }
+
+    boolean getIsFull() {
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (occupied[i][j] == Player.UNSET) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    boolean getGameEnded() {
+        return getHasWinner() || getIsFull();
+    }
+
+    boolean getHasWinner(){
+        return getWinner() != Player.UNSET;
+    }
+
+    Player getWinner() {
+        if (getPlayerHasWin(Player.CIRCLE)) {
+            return Player.CIRCLE;
+        } else if (getPlayerHasWin(Player.CROSS)) {
+            return Player.CROSS;
+        }
+        return Player.UNSET;
+    }
+
+
+
 }

@@ -1,13 +1,13 @@
 package game;
 
 /**
- * The GameMove class is used to represent a game move.
+ * The TicTacToeMove class is used to represent a game move.
  */
-class GameMove {
+class TicTacToeMove {
     GridNumber location;
     Player player;
 
-    public GameMove(GridNumber aLoc, Player aPlayer) {
+    TicTacToeMove(GridNumber aLoc, Player aPlayer) {
         location = aLoc;
         player = aPlayer;
     }

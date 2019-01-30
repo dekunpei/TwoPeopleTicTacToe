@@ -7,7 +7,7 @@ import javafx.scene.control.Button;
 class ButtonClickHandler implements EventHandler<ActionEvent> {
     private Main game;
 
-    public ButtonClickHandler(Main aGame) {
+    ButtonClickHandler(Main aGame) {
         game = aGame;
     }
 
