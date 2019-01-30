@@ -1,6 +1,5 @@
 package game;
 
-import java.util.Stack;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.HBox;
@@ -16,11 +15,11 @@ import javafx.scene.layout.StackPane;
  * The Main class creates the JavaFX implementation.
  */
 public class Main extends Application {
-    private static final int PLAY_BUTTON_SIZE = 220;
+    private static final int PLAY_BUTTON_SIZE = 200;
     private static final String APP_TITLE = "Simple Tic-Tac-Toe";
 
     private ButtonClickHandler buttonClickHandler;
-    private GameState gameState;
+    private TicTacToeState ticTacToeState;
 
     private Button[][] playBs;
     private Button resetB;
@@ -29,6 +28,7 @@ public class Main extends Application {
 
     private HBox[] playRows;
     private VBox playGrid;
+    private VBox gameLayout;
 
     public static void main(String[] args) {
         launch(args);
@@ -43,12 +43,13 @@ public class Main extends Application {
                 playBs[i][j] = new Button();
                 playBs[i][j].setPrefSize(PLAY_BUTTON_SIZE, PLAY_BUTTON_SIZE);
                 playBs[i][j].setOnAction(buttonClickHandler);
-                playBs[i][j].setStyle("-fx-font-size: 12em;");
+                playBs[i][j].setStyle("-fx-font-size: 12em; -fx-text-overrun: clip;");
             }
         }
 
         for (int k = 0; k < 3; k++) {
             playRows[k] = new HBox(playBs[k][0], playBs[k][1], playBs[k][2]);
+            playRows[k].setStyle("-fx-spacing: 10");
 
         }
         resetB = new Button("Reset");
@@ -64,17 +65,24 @@ public class Main extends Application {
         redoB.setOnAction(buttonClickHandler);
 
         HBox buttonRow = new HBox(resetB, undoB, redoB);
+        buttonRow.setStyle("-fx-spacing: 40; -fx-padding: 0 0 0 20;");
 
-        playGrid = new VBox(buttonRow, playRows[0], playRows[1], playRows[2]);
+        VBox playGridInner = new VBox(playRows[0], playRows[1], playRows[2]);
+        playGridInner.setStyle("-fx-spacing: 10; -fx-background-color: black;");
+        playGrid = new VBox(playGridInner);
+        playGrid.setStyle(" -fx-padding: 20;");
 
-        Pane layout = new StackPane(playGrid);
+        gameLayout = new VBox(buttonRow, playGrid);
+        gameLayout.setStyle("-fx-spacing: 10");
+
+        Pane layout = new StackPane(gameLayout);
         return layout;
     }
 
     @Override
     public void start(Stage primaryStage) throws Exception{
         primaryStage.setTitle(APP_TITLE );
-        gameState = new GameState();
+        ticTacToeState = new TicTacToeState();
         buttonClickHandler = new ButtonClickHandler(this);
         Pane layout = createButtonGroup();
         Scene scene = new Scene(layout);
@@ -110,20 +118,36 @@ public class Main extends Application {
 
     private boolean isOccupied(Button b) {
         GridNumber gNum = getPlayButtonCoordinate(b);
-        return gameState.getOccupiedBy(gNum) != Player.UNSET;
+        return ticTacToeState.getOccupiedBy(gNum) != Player.UNSET;
+    }
+
+    private void handleEndedGame() {
+        if (ticTacToeState.getHasWinner()) {
+            if (ticTacToeState.getWinner() == Player.CIRCLE) {
+                AlertBox.display("Game Ends", "O won!");
+            } else if (ticTacToeState.getWinner() == Player.CROSS) {
+                AlertBox.display("Game Ends", "X won!");
+            }
+            reset();
+        } else if (ticTacToeState.getIsFull()) {
+            AlertBox.display("Game Ends", "Game is tied!");
+            reset();
+        }
     }
 
     void play(Button b) {
         if (isOccupied(b)) {
             return;
         }
-        Player currentPlayer = gameState.getCurrentPlayer();
-        gameState.setMove(getPlayButtonCoordinate(b));
+        Player currentPlayer = ticTacToeState.getCurrentPlayer();
+        ticTacToeState.setMove(getPlayButtonCoordinate(b));
         if (currentPlayer == Player.CIRCLE) {
             b.setText("O");
         } else {
             b.setText("X");
         }
+
+        handleEndedGame();
     }
 
     private GridNumber getPlayButtonCoordinate (Button b) {
@@ -138,7 +162,7 @@ public class Main extends Application {
     }
 
     void reset() {
-        gameState.initGame();
+        ticTacToeState.initGame();
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
                 playBs[i][j].setText(null);
@@ -147,25 +171,25 @@ public class Main extends Application {
     }
 
     void undo() {
-        if (!gameState.canUndo()) {
+        if (!ticTacToeState.canUndo()) {
             return;
         }
-        GameMove move = gameState.getUndoMove();
+        TicTacToeMove move = ticTacToeState.getUndoMove();
         playBs[move.location.row][move.location.column].setText(null);
-        gameState.undo();
+        ticTacToeState.undo();
     }
 
     void redo() {
-        if (!gameState.canRedo()) {
+        if (!ticTacToeState.canRedo()) {
             return;
         }
-        GameMove move = gameState.getRedoMove();
+        TicTacToeMove move = ticTacToeState.getRedoMove();
         if (move.player == Player.CIRCLE) {
             playBs[move.location.row][move.location.column].setText("O");
         } else {
             playBs[move.location.row][move.location.column].setText("X");
         }
-        gameState.redo();
+        ticTacToeState.redo();
 
     }
 }
