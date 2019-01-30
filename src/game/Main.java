@@ -175,7 +175,7 @@ public class Main extends Application {
             return;
         }
         TicTacToeMove move = ticTacToeState.getUndoMove();
-        playBs[move.location.row][move.location.column].setText(null);
+        playBs[move.getLocation().getRow()][move.getLocation().getColumn()].setText(null);
         ticTacToeState.undo();
     }
 
@@ -184,10 +184,10 @@ public class Main extends Application {
             return;
         }
         TicTacToeMove move = ticTacToeState.getRedoMove();
-        if (move.player == Player.CIRCLE) {
-            playBs[move.location.row][move.location.column].setText("O");
+        if (move.getPlayer() == Player.CIRCLE) {
+            playBs[move.getLocation().getRow()][move.getLocation().getColumn()].setText("O");
         } else {
-            playBs[move.location.row][move.location.column].setText("X");
+            playBs[move.getLocation().getRow()][move.getLocation().getColumn()].setText("X");
         }
         ticTacToeState.redo();
 

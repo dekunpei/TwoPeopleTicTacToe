@@ -4,8 +4,8 @@ package game;
  * The GridNumber class is used to represent a location.
  */
 class GridNumber {
-    int row;
-    int column;
+    private int row;
+    private int column;
 
     GridNumber(int r, int c) {
         row = r;
@@ -14,5 +14,13 @@ class GridNumber {
 
     boolean isValid() {
         return row >=0 && column >=0;
+    }
+
+    int getRow() {
+        return row;
+    }
+
+    int getColumn() {
+        return column;
     }
 }
