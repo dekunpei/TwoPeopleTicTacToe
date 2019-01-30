@@ -48,11 +48,11 @@ class TicTacToeState {
     }
 
     private void setOccupied(GridNumber gridNum, Player player) {
-        occupied[gridNum.row][gridNum.column] = player;
+        occupied[gridNum.getRow()][gridNum.getColumn()] = player;
     }
 
     Player getOccupiedBy(GridNumber gridNum) {
-        return occupied[gridNum.row][gridNum.column];
+        return occupied[gridNum.getRow()][gridNum.getColumn()];
     }
 
     void setMove(GridNumber gridNum) {
@@ -80,8 +80,8 @@ class TicTacToeState {
         }
 
         TicTacToeMove move = prevMoves.peek();
-        currentPlayer = move.player;
-        occupied[move.location.row][move.location.column] = Player.UNSET;
+        currentPlayer = move.getPlayer();
+        occupied[move.getLocation().getRow()][move.getLocation().getColumn()] = Player.UNSET;
         nextMoves.push(move);
         prevMoves.pop();
     }
@@ -99,12 +99,12 @@ class TicTacToeState {
             return;
         }
         TicTacToeMove move = nextMoves.peek();
-        if (move.player == Player.CIRCLE) {
+        if (move.getPlayer() == Player.CIRCLE) {
             currentPlayer = Player.CROSS;
         } else {
             currentPlayer = Player.CIRCLE;
         }
-        occupied[move.location.row][move.location.column] = move.player;
+        occupied[move.getLocation().getRow()][move.getLocation().getColumn()] = move.getPlayer();
 
         prevMoves.push(move);
         nextMoves.pop();
