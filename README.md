@@ -1,6 +1,6 @@
 # TwoPeopleTicTacToe
 ## Summary
-Simple two people tic-tax-toe written using Java and JavaFX. This version supports the following:
+Simple two people tic-tac-toe written using Java and JavaFX. This version supports the following:
 - reset, undo and redo
 - game end detection
 
